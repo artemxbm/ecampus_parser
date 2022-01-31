@@ -12,18 +12,18 @@ class TLSAdapter(requests.adapters.HTTPAdapter):
         return super(TLSAdapter, self).init_poolmanager(*args, **kwargs)
 
 
-def connect():
+def connect(log, password):
     session = requests.session()
     session.mount('https://', TLSAdapter())
     html_post = session.post("https://api.campus.kpi.ua/oauth/token",
-                             data={'username': 'kav1004201', 'password': 'BjVcPEo3', 'grant_type': 'password'})
+                             data={f'username': {log}, 'password': {password}, 'grant_type': 'password'})
     _ = session.get("https://ecampus.kpi.ua/home", data=html_post.cookies)
     _ = session.get("https://campus.kpi.ua", data=html_post.cookies)
     return session, html_post
 
 
-def id_parser():
-    session, html_post = connect()
+def id_parser(log, password):
+    session, html_post = connect(log, password)
     html_get = session.get("https://campus.kpi.ua/student/index.php?mode=studysheet", data=html_post.cookies)
     parser = BeautifulSoup(html_get.content, "html.parser")
     parser = parser.find("tbody")
@@ -33,12 +33,15 @@ def id_parser():
         subject_id = (int(str(k)[pos+3:pos+8]))
         pos2 = str(k)[pos + 10:].find(",")
         subject = (str(k)[pos + 10:pos + 10 + pos2])
+        if subject[-1] == ".":
+            subject = subject[:-1]
         id_subject[subject_id] = subject
     return id_subject
 
-def campus_parser():
-    session, html_post = connect()
-    ids = id_parser()
+
+def campus_parser(log, password):
+    session, html_post = connect(log, password)
+    ids = id_parser(log, password)
     with open("pars.txt", "w") as file:
         for ID in ids.keys():
             url = f"https://campus.kpi.ua/student/index.php?mode=studysheet&action=view&id={ID}"
@@ -50,8 +53,8 @@ def campus_parser():
                 for k in i.find_all("tr"):
                     # prints all td tags with a text format
                     j = k.find_all("td")
-                    file.write(f"{j[0].text} {j[1].text} {j[2].text} {j[3].text}\n")
-
+                    if j[1].text != "":
+                        file.write(f"{ids[ID]} {j[0].text} {j[1].text} {j[2].text} {j[3].text}\n")
 
 def main():
     campus_parser()
@@ -60,7 +63,7 @@ def main():
 
 
 def debug():
-    id_parser()
+    campus_parser()
 
 
 if __name__ == "__main__":
