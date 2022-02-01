@@ -30,7 +30,7 @@ def id_parser(log, password):
     id_subject = {}
     for k in parser.find_all("tr"):
         pos = str(k).find("id=")
-        subject_id = (int(str(k)[pos+3:pos+8]))
+        subject_id = (int(str(k)[pos + 3:pos + 8]))
         pos2 = str(k)[pos + 10:].find(",")
         subject = (str(k)[pos + 10:pos + 10 + pos2])
         if subject[-1] == ".":
@@ -42,24 +42,27 @@ def id_parser(log, password):
 def campus_parser(log, password):
     session, html_post = connect(log, password)
     ids = id_parser(log, password)
-    with open("pars.txt", "w") as file:
-        for ID in ids.keys():
-            url = f"https://campus.kpi.ua/student/index.php?mode=studysheet&action=view&id={ID}"
-            html_get = session.get(url, data=html_post.cookies)
-            parser = BeautifulSoup(html_get.content, "html.parser")
-            parser = parser.find("div", id="tabs-0")
-            for i in parser.find_all("tbody"):
-                # finds all td tags in tr tags
-                for k in i.find_all("tr"):
-                    # prints all td tags with a text format
-                    j = k.find_all("td")
-                    if j[1].text != "":
-                        file.write(f"{ids[ID]} {j[0].text} {j[1].text} {j[2].text} {j[3].text}\n")
+    data_str = []
+    for ID in ids.keys():
+        url = f"https://campus.kpi.ua/student/index.php?mode=studysheet&action=view&id={ID}"
+        html_get = session.get(url, data=html_post.cookies)
+        parser = BeautifulSoup(html_get.content, "html.parser")
+        parser = parser.find("div", id="tabs-0")
+        for i in parser.find_all("tbody"):
+            # finds all td tags in tr tags
+            for k in i.find_all("tr"):
+                # prints all td tags with a text format
+                j = k.find_all("td")
+                if j[1].text != "":
+                    data_str.append([ids[ID], j[0].text, j[1].text, j[2].text, j[3].text])
+    return data_str
 
+
+# f"{ids[ID]} {j[0].text} {j[1].text} {j[2].text} {j[3].text}
 def main():
     campus_parser()
-    with open("pars.txt", 'r') as f:
-        print("".join(i for i in f.readlines()))
+    # with open("pars.txt", 'r') as f:
+    # print("".join(i for i in f.readlines()))
 
 
 def debug():
