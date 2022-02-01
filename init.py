@@ -1,8 +1,7 @@
-from telegram import Bot, BotCommand
 from telegram.ext import Updater
 from telegram.ext import MessageHandler, Filters, CommandHandler
 
-from text import text_messages
+from text import text_messages, start
 
 
 def get_token() -> str:
@@ -18,7 +17,7 @@ def get_updater(token: str) -> Updater:
     text_handler = MessageHandler(Filters.text & (~Filters.command), text_messages)
     dispatcher.add_handler(text_handler)
 
-    #deadinside_handler = CommandHandler('1000minus7', deadinside)
-    #dispatcher.add_handler(deadinside_handler)
+    deadinside_handler = CommandHandler('start', start)
+    dispatcher.add_handler(deadinside_handler)
 
     return updater

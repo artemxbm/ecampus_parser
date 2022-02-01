@@ -12,18 +12,13 @@ class TLSAdapter(requests.adapters.HTTPAdapter):
         return super(TLSAdapter, self).init_poolmanager(*args, **kwargs)
 
 
-def connect(log, password):
+def campus_parser(log, password):
     session = requests.session()
     session.mount('https://', TLSAdapter())
     html_post = session.post("https://api.campus.kpi.ua/oauth/token",
                              data={f'username': {log}, 'password': {password}, 'grant_type': 'password'})
     _ = session.get("https://ecampus.kpi.ua/home", data=html_post.cookies)
     _ = session.get("https://campus.kpi.ua", data=html_post.cookies)
-    return session, html_post
-
-
-def id_parser(log, password):
-    session, html_post = connect(log, password)
     html_get = session.get("https://campus.kpi.ua/student/index.php?mode=studysheet", data=html_post.cookies)
     parser = BeautifulSoup(html_get.content, "html.parser")
     parser = parser.find("tbody")
@@ -36,14 +31,8 @@ def id_parser(log, password):
         if subject[-1] == ".":
             subject = subject[:-1]
         id_subject[subject_id] = subject
-    return id_subject
-
-
-def campus_parser(log, password):
-    session, html_post = connect(log, password)
-    ids = id_parser(log, password)
     data_str = []
-    for ID in ids.keys():
+    for ID in id_subject.keys():
         url = f"https://campus.kpi.ua/student/index.php?mode=studysheet&action=view&id={ID}"
         html_get = session.get(url, data=html_post.cookies)
         parser = BeautifulSoup(html_get.content, "html.parser")
@@ -54,19 +43,19 @@ def campus_parser(log, password):
                 # prints all td tags with a text format
                 j = k.find_all("td")
                 if j[1].text != "":
-                    data_str.append([ids[ID], j[0].text, j[1].text, j[2].text, j[3].text])
+                    data_str.append([id_subject[ID], j[0].text, j[1].text, j[2].text, j[3].text])
     return data_str
 
 
 # f"{ids[ID]} {j[0].text} {j[1].text} {j[2].text} {j[3].text}
 def main():
-    campus_parser()
+    ...
     # with open("pars.txt", 'r') as f:
     # print("".join(i for i in f.readlines()))
 
 
 def debug():
-    campus_parser()
+    ...
 
 
 if __name__ == "__main__":
