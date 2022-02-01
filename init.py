@@ -14,6 +14,7 @@ def get_updater(token: str) -> Updater:
     updater = Updater(token=token, use_context=True)
     dispatcher = updater.dispatcher
 
+    # TODO: add other handlers
     text_handler = MessageHandler(Filters.text & (~Filters.command), text_messages)
     dispatcher.add_handler(text_handler)
 

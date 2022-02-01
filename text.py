@@ -19,7 +19,7 @@ def text_messages(update: Update, context: CallbackContext) -> None:
                 lesson_name = lines[i][0]
                 grade_date = lines[i][1]
                 grade = lines[i][2]
-
+                # TODO: add teacher name
                 if lesson_name != lines[i-1][0]:
                     if i != 0:
                         message_block += f"Сума балів: {round(grade_sum, 3)}\n"
@@ -27,7 +27,8 @@ def text_messages(update: Update, context: CallbackContext) -> None:
                     message_block += f"\n*{lesson_name}*\n\n"
 
                 message_block += f"{grade_date}  {grade}\n"
-                grade_sum += float(grade.replace("н", "0"))
+                # TODO: add norbal number checker
+                grade_sum += float(grade.replace("н", "0").replace("+", "0").replace("-", "0"))
                 if i == len(lines)-1:
                     message_block += f"Сума балів: {grade_sum}"
 
@@ -42,4 +43,5 @@ def text_messages(update: Update, context: CallbackContext) -> None:
 
 
 def start(update: Update, context: CallbackContext) -> None:
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Введіть логін і пароль через пробіл")
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Цей бот парсить ваші оцінки з кампусу КПІ\n"
+                                                                    "Введіть логін і пароль через пробіл")
